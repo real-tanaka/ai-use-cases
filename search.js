@@ -1,6 +1,7 @@
 import {openai} from "./openai.js";
+import 'dotenv/config'
 import {Document} from 'langchain/document'
-import {MemoryVectorStore} from "langchain/dist/vectorstores/memory";
+import {MemoryVectorStore} from "langchain/vectorstores/memory";
 import {OpenAIEmbeddings} from 'langchain/embeddings/openai'
 
 const movies = [
@@ -44,7 +45,14 @@ const movies = [
 const createStore = () => MemoryVectorStore.fromDocuments(
     movies.map(movie => new Document({
         pageContent: `Title: ${movie.title}\n${movie.description}`,
-        metadata: {source: movie.id, title: movie.title}
+        metadata: {source: movie.id, title: movie.title},
     })),
-    new OpenAIEmbeddings({api})
+    new OpenAIEmbeddings()
 )
+
+const search = async (query, count = 1) => {
+    const store = await createStore()
+    return store.similaritySearch(query, count)
+}
+
+console.log(await search('something cute and fluffy'))
